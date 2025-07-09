@@ -1,3 +1,31 @@
+import numpy as np
+
+def ndcg_at_k(recommended: list, actual: list, k: int = 5) -> float:
+    """
+    NDCG@K: Normalized Discounted Cumulative Gain at rank K.
+
+    Args:
+        recommended (list): List of recommended product IDs.
+        actual (list): List of actual relevant product IDs.
+        k (int): Top-K cutoff.
+
+    Returns:
+        float: NDCG score.
+    """
+    if not recommended or not actual:
+        return 0.0
+
+    recommended_k = recommended[:k]
+    dcg = 0.0
+    for i, item in enumerate(recommended_k):
+        if item in actual:
+            dcg += 1 / np.log2(i + 2)  # log2(i+2) since index starts at 0
+
+    # Ideal DCG (best possible ranking)
+    ideal_hits = min(len(actual), k)
+    idcg = sum(1 / np.log2(i + 2) for i in range(ideal_hits))
+
+    return dcg / idcg if idcg != 0 else 0.0
 
 def precision_at_k(recommended: list, actual: list, k: int = 5) -> float:
     """
@@ -44,3 +72,4 @@ if __name__ == "__main__":
 
     print("Precision@5:", precision_at_k(recs, actual, k=5))   # → 2/5 = 0.40
     print("Recall@5:", recall_at_k(recs, actual, k=5))         # → 2/3 ≈ 0.67
+    print("NDCG@5:", ndcg_at_k(recs, actual, k=5))
